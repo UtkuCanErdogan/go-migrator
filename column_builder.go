@@ -1,66 +1,76 @@
 package go_migrator
 
 type ColumnBuilder struct {
-	Name           string
-	ColumnType     ColumnType
-	Constraints    []Constraint
-	Length         int32
-	DefaultValue   any
-	ForeignBuilder *ForeignBuilder
+	name           string
+	columnType     ColumnType
+	constraints    []Constraint
+	length         int32
+	defaultValue   any
+	foreignBuilder *ForeignBuilder
 }
 
 type AlterColumnBuilder struct {
-	Name           string
-	NewName        *string
-	ColumnType     *ColumnType
-	Operation      Operation
-	Constraint     []Constraint
-	Length         int32
-	DefaultValue   any
-	ForeignBuilder *ForeignBuilder
+	name           string
+	newName        *string
+	columnType     *ColumnType
+	operation      Operation
+	constraints    []Constraint
+	length         int32
+	defaultValue   any
+	foreignBuilder *ForeignBuilder
 }
 
 type ForeignBuilder struct {
-	ReferenceColumn *string
-	ReferenceTable  *string
+	referenceColumn *string
+	referenceTable  *string
 }
 
 func (f *ForeignBuilder) Reference(referenceColumn string) *ForeignBuilder {
-	f.ReferenceColumn = &referenceColumn
+	f.referenceColumn = &referenceColumn
 	return f
 }
 
 func (f *ForeignBuilder) Table(referenceTable string) *ForeignBuilder {
-	f.ReferenceTable = &referenceTable
+	f.referenceTable = &referenceTable
 	return f
 }
 
 func (c *ColumnBuilder) NotNull() *ColumnBuilder {
-	c.Constraints = append(c.Constraints, NotNullConstraint)
+	c.constraints = append(c.constraints, Constraint{cType: NotNullConstraint})
 	return c
 }
 
 func (c *ColumnBuilder) Unique() *ColumnBuilder {
-	c.Constraints = append(c.Constraints, UniqueConstraint)
+	c.constraints = append(c.constraints, Constraint{cType: UniqueConstraint})
 	return c
 }
 
 func (c *ColumnBuilder) Primary() *ColumnBuilder {
-	c.Constraints = append(c.Constraints, PrimaryKeyConstraint)
+	c.constraints = append(c.constraints, Constraint{cType: PrimaryKeyConstraint})
 	return c
 }
 
 func (c *ColumnBuilder) Default(value any) *ColumnBuilder {
-	c.DefaultValue = value
+	c.defaultValue = value
 	return c
 }
 
 func (a *AlterColumnBuilder) Primary() *AlterColumnBuilder {
-	a.Constraint = append(a.Constraint, PrimaryKeyConstraint)
+	a.constraints = append(a.constraints, Constraint{cType: NotNullConstraint})
 	return a
 }
 
 func (a *AlterColumnBuilder) Default(value any) *AlterColumnBuilder {
-	a.DefaultValue = value
+	a.defaultValue = value
+	return a
+}
+
+func (a *AlterColumnBuilder) NotNull() *AlterColumnBuilder {
+	a.constraints = append(a.constraints, Constraint{cType: NotNullConstraint})
+	return a
+}
+
+func (a *AlterColumnBuilder) Unique() *AlterColumnBuilder {
+	a.constraints = append(a.constraints, Constraint{cType: UniqueConstraint})
 	return a
 }
