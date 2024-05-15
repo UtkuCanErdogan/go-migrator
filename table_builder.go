@@ -11,12 +11,13 @@ type AlterTableBuilder struct {
 }
 
 func (m *Migrator) CreateTable(tableName string) *CreateTableBuilder {
-	return &CreateTableBuilder{tableName: tableName, columns: nil}
+	builder := &CreateTableBuilder{tableName: tableName, columns: nil}
+	return builder
 }
 
 func (m *Migrator) AlterTable(tableName string) *AlterTableBuilder {
-	builder := AlterTableBuilder{tableName: tableName}
-	return &builder
+	builder := &AlterTableBuilder{tableName: tableName}
+	return builder
 }
 
 func (m *Migrator) DropTable(tableName string) error {
@@ -31,106 +32,116 @@ func (m *Migrator) DropTable(tableName string) error {
 }
 
 func (t *CreateTableBuilder) Increments(columnName string) *ColumnBuilder {
-	column := &ColumnBuilder{Name: columnName, Constraints: []Constraint{AutoIncrementConstraint}, ColumnType: ColumnTypeInteger}
+	column := &ColumnBuilder{name: columnName, columnType: ColumnTypeSerial}
 	t.columns = append(t.columns, column)
 	return column
 }
 
 func (t *CreateTableBuilder) UUID(columnName string) *ColumnBuilder {
-	column := &ColumnBuilder{Name: columnName, Constraints: nil, ColumnType: ColumnTypeUUID}
+	column := &ColumnBuilder{name: columnName, constraints: nil, columnType: ColumnTypeUUID}
 	t.columns = append(t.columns, column)
 	return column
 }
 
 func (t *CreateTableBuilder) String(columnName string, length int32) *ColumnBuilder {
-	column := &ColumnBuilder{Name: columnName, Constraints: nil, ColumnType: ColumnTypeString, Length: length}
+	column := &ColumnBuilder{name: columnName, constraints: nil, columnType: ColumnTypeString, length: length}
 	t.columns = append(t.columns, column)
 	return column
 }
 
 func (t *CreateTableBuilder) Integer(columnName string) *ColumnBuilder {
-	column := &ColumnBuilder{Name: columnName, Constraints: nil, ColumnType: ColumnTypeInteger}
+	column := &ColumnBuilder{name: columnName, constraints: nil, columnType: ColumnTypeInteger}
 	t.columns = append(t.columns, column)
 	return column
 }
 
 func (t *CreateTableBuilder) Boolean(columnName string) *ColumnBuilder {
-	column := &ColumnBuilder{Name: columnName, Constraints: nil, ColumnType: ColumnTypeBoolean}
+	column := &ColumnBuilder{name: columnName, constraints: nil, columnType: ColumnTypeBoolean}
 	t.columns = append(t.columns, column)
 	return column
 }
 
 func (t *CreateTableBuilder) Foreign(columnName string) *ForeignBuilder {
-	foreign := &ForeignBuilder{ReferenceColumn: nil, ReferenceTable: nil}
-	column := &ColumnBuilder{Name: columnName, Constraints: []Constraint{ForeignKeyConstraint}, ColumnType: ColumnTypeBoolean, ForeignBuilder: foreign}
+	foreign := &ForeignBuilder{referenceColumn: nil, referenceTable: nil}
+	column := &ColumnBuilder{name: columnName, constraints: []Constraint{{cType: ForeignKeyConstraint}}, foreignBuilder: foreign}
 	t.columns = append(t.columns, column)
 
 	return foreign
 }
 
+func (t *CreateTableBuilder) Build() *TableBuilder {
+	tableBuilder := &TableBuilder{createBuilder: t, alterBuilder: nil}
+	return tableBuilder
+}
+
 func (a *AlterTableBuilder) DropColumn(columnName string) *AlterTableBuilder {
-	column := &AlterColumnBuilder{Name: columnName, Operation: OperationDropColumn, Constraint: nil, ForeignBuilder: nil, DefaultValue: nil}
+	column := &AlterColumnBuilder{name: columnName, operation: OperationDropColumn, constraints: nil, foreignBuilder: nil, defaultValue: nil}
 	a.columns = append(a.columns, column)
 	return a
 }
 
 func (a *AlterTableBuilder) RenameColumn(columnName, newColumnName string) *AlterTableBuilder {
-	column := &AlterColumnBuilder{Name: columnName, NewName: &newColumnName, Operation: OperationRenameColumn, Constraint: nil, ForeignBuilder: nil, DefaultValue: nil}
+	column := &AlterColumnBuilder{name: columnName, newName: &newColumnName, operation: OperationRenameColumn, constraints: nil, foreignBuilder: nil, defaultValue: nil}
 	a.columns = append(a.columns, column)
 	return a
 }
 
-func (a *AlterTableBuilder) CreateConstraint(columnName string, constraint Constraint) *AlterTableBuilder {
-	column := &AlterColumnBuilder{Name: columnName, Operation: OperationCreateConstraint, Constraint: []Constraint{constraint}, ForeignBuilder: nil, DefaultValue: nil}
+func (a *AlterTableBuilder) CreateConstraint(columnName string, constraint ConstraintType) *AlterTableBuilder {
+	column := &AlterColumnBuilder{name: columnName, operation: OperationCreateConstraint, constraints: []Constraint{{cType: constraint}}, foreignBuilder: nil, defaultValue: nil}
 	a.columns = append(a.columns, column)
 	return a
 }
 
-func (a *AlterTableBuilder) DropConstraint(columnName string, constraint Constraint) *AlterTableBuilder {
-	column := &AlterColumnBuilder{Name: columnName, Operation: OperationDropConstraint, Constraint: []Constraint{constraint}, ForeignBuilder: nil, DefaultValue: nil}
+func (a *AlterTableBuilder) DropConstraint(columnName, constraintName string, constraintType ConstraintType) *AlterTableBuilder {
+	column := &AlterColumnBuilder{name: columnName, operation: OperationDropConstraint, constraints: []Constraint{{cType: constraintType, name: constraintName}}, foreignBuilder: nil, defaultValue: nil}
 	a.columns = append(a.columns, column)
 	return a
 }
 
 func (a *AlterTableBuilder) Increments(columnName string) *AlterColumnBuilder {
-	columnType := ColumnTypeInteger
-	column := &AlterColumnBuilder{Name: columnName, Constraint: []Constraint{AutoIncrementConstraint}, Operation: OperationCreateColumn, ColumnType: &columnType}
+	columnType := ColumnTypeSerial
+	column := &AlterColumnBuilder{name: columnName, operation: OperationCreateColumn, columnType: &columnType}
 	a.columns = append(a.columns, column)
 	return column
 }
 
 func (a *AlterTableBuilder) UUID(columnName string) *AlterColumnBuilder {
 	columnType := ColumnTypeUUID
-	column := &AlterColumnBuilder{Name: columnName, Constraint: nil, Operation: OperationCreateColumn, ColumnType: &columnType}
+	column := &AlterColumnBuilder{name: columnName, constraints: nil, operation: OperationCreateColumn, columnType: &columnType}
 	a.columns = append(a.columns, column)
 	return column
 }
 
 func (a *AlterTableBuilder) String(columnName string, length int32) *AlterColumnBuilder {
 	columnType := ColumnTypeString
-	column := &AlterColumnBuilder{Name: columnName, Constraint: nil, ColumnType: &columnType, Operation: OperationCreateColumn, Length: length}
+	column := &AlterColumnBuilder{name: columnName, constraints: nil, columnType: &columnType, operation: OperationCreateColumn, length: length}
 	a.columns = append(a.columns, column)
 	return column
 }
 
 func (a *AlterTableBuilder) Integer(columnName string) *AlterColumnBuilder {
 	columnType := ColumnTypeInteger
-	column := &AlterColumnBuilder{Name: columnName, Constraint: nil, Operation: OperationCreateColumn, ColumnType: &columnType}
+	column := &AlterColumnBuilder{name: columnName, constraints: nil, operation: OperationCreateColumn, columnType: &columnType}
 	a.columns = append(a.columns, column)
 	return column
 }
 
 func (a *AlterTableBuilder) Boolean(columnName string) *AlterColumnBuilder {
 	columnType := ColumnTypeBoolean
-	column := &AlterColumnBuilder{Name: columnName, Constraint: nil, ColumnType: &columnType}
+	column := &AlterColumnBuilder{name: columnName, constraints: nil, columnType: &columnType}
 	a.columns = append(a.columns, column)
 	return column
 }
 
 func (a *AlterTableBuilder) Foreign(columnName string) *ForeignBuilder {
-	foreign := &ForeignBuilder{ReferenceColumn: nil, ReferenceTable: nil}
-	column := &AlterColumnBuilder{Name: columnName, Constraint: []Constraint{ForeignKeyConstraint}, Operation: OperationCreateColumn, ForeignBuilder: foreign}
+	foreign := &ForeignBuilder{referenceColumn: nil, referenceTable: nil}
+	column := &AlterColumnBuilder{name: columnName, constraints: []Constraint{{cType: ForeignKeyConstraint}}, operation: OperationCreateColumn, foreignBuilder: foreign}
 	a.columns = append(a.columns, column)
 
 	return foreign
+}
+
+func (a *AlterTableBuilder) Build() *TableBuilder {
+	tableBuilder := &TableBuilder{createBuilder: nil, alterBuilder: a}
+	return tableBuilder
 }
