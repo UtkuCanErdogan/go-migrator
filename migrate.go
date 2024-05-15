@@ -78,56 +78,60 @@ func (m *Migrator) Migrate() error {
 			for _, column := range builder.columns {
 				alterQuery := "ALTER TABLE " + builder.tableName
 
-				switch column.operation {
-				case OperationCreateColumn:
-					if column.foreignBuilder != nil {
-						if column.foreignBuilder.referenceColumn == nil || column.foreignBuilder.referenceTable == nil {
-							return errors.New("reference column and table required for foreign operation")
+				if column.rawSql != nil {
+					alterQuery = *column.rawSql
+				} else {
+					switch column.operation {
+					case OperationCreateColumn:
+						if column.foreignBuilder != nil {
+							if column.foreignBuilder.referenceColumn == nil || column.foreignBuilder.referenceTable == nil {
+								return errors.New("reference column and table required for foreign operation")
+							}
+
+							alterQuery = "ALTER TABLE " + builder.tableName + " ADD CONSTRAINT fk_" + column.name + " FOREIGN KEY(" + *column.foreignBuilder.referenceColumn + ") " + "REFERENCES public." + *column.foreignBuilder.referenceTable
+						} else {
+							alterQuery = alterQuery + " ADD COLUMN " + column.name + " " + column.columnType.toString(column.length)
+							if column.defaultValue != nil {
+								alterQuery = alterQuery + " DEFAULT " + fmt.Sprintf("%v", column.defaultValue)
+							}
+						}
+						if len(column.constraints) > 0 {
+							for _, cons := range column.constraints {
+								alterQuery = alterQuery + " " + cons.cType.toString()
+							}
+						}
+					case OperationRenameColumn:
+						if column.newName == nil {
+							return errors.New("column new name required")
 						}
 
-						alterQuery = "ALTER TABLE " + builder.tableName + " ADD CONSTRAINT fk_" + column.name + " FOREIGN KEY(" + *column.foreignBuilder.referenceColumn + ") " + "REFERENCES public." + *column.foreignBuilder.referenceTable
-					} else {
-						alterQuery = alterQuery + " ADD COLUMN " + column.name + " " + column.columnType.toString(column.length)
-						if column.defaultValue != nil {
-							alterQuery = alterQuery + " DEFAULT " + fmt.Sprintf("%v", column.defaultValue)
-						}
-					}
-					if len(column.constraints) > 0 {
-						for _, cons := range column.constraints {
-							alterQuery = alterQuery + " " + cons.cType.toString()
-						}
-					}
-				case OperationRenameColumn:
-					if column.newName == nil {
-						return errors.New("column new name required")
-					}
+						alterQuery = alterQuery + " RENAME COLUMN " + column.name + " TO " + *column.newName
+					case OperationCreateConstraint:
+						cons := column.constraints[0]
+						if column.foreignBuilder != nil {
+							if column.foreignBuilder.referenceColumn == nil || column.foreignBuilder.referenceTable == nil {
+								return errors.New("reference column and table required for foreign operation")
+							}
 
-					alterQuery = alterQuery + " RENAME COLUMN " + column.name + " TO " + *column.newName
-				case OperationCreateConstraint:
-					cons := column.constraints[0]
-					if column.foreignBuilder != nil {
-						if column.foreignBuilder.referenceColumn == nil || column.foreignBuilder.referenceTable == nil {
-							return errors.New("reference column and table required for foreign operation")
+							alterQuery = alterQuery + " ADD CONSTRAINT fk_" + column.name + " FOREIGN KEY(" + *column.foreignBuilder.referenceColumn + ") " + "REFERENCES " + *m.Config.Connection.Schema + *column.foreignBuilder.referenceTable
+						} else {
+							alterQuery = alterQuery + " ADD CONSTRAINT " + strings.ToLower(column.name) + "_" + cons.cType.ToLower() + " " + cons.cType.toString() + "("
+							alterQuery = alterQuery + column.name + ")"
+						}
+					case OperationChangeType:
+						if column.columnType == nil {
+							return errors.New("column type required")
 						}
 
-						alterQuery = alterQuery + " ADD CONSTRAINT fk_" + column.name + " FOREIGN KEY(" + *column.foreignBuilder.referenceColumn + ") " + "REFERENCES " + *m.Config.Connection.Schema + *column.foreignBuilder.referenceTable
-					} else {
-						alterQuery = alterQuery + " ADD CONSTRAINT " + strings.ToLower(column.name) + "_" + cons.cType.ToLower() + " " + cons.cType.toString() + "("
-						alterQuery = alterQuery + column.name + ")"
+						alterQuery = alterQuery + " ALTER COLUMN " + column.name + " TYPE " + column.columnType.toString(column.length)
+					case OperationDropConstraint:
+						cons := column.constraints[0]
+						alterQuery = alterQuery + " DROP CONSTRAINT " + cons.name
+					case OperationDropColumn:
+						alterQuery = alterQuery + " DROP COLUMN " + column.name
+					default:
+						return errors.New("un supported operation")
 					}
-				case OperationChangeType:
-					if column.columnType == nil {
-						return errors.New("column type required")
-					}
-
-					alterQuery = alterQuery + " ALTER COLUMN " + column.name + " TYPE " + column.columnType.toString(column.length)
-				case OperationDropConstraint:
-					cons := column.constraints[0]
-					alterQuery = alterQuery + " DROP CONSTRAINT " + cons.name
-				case OperationDropColumn:
-					alterQuery = alterQuery + " DROP COLUMN " + column.name
-				default:
-					return errors.New("un supported operation")
 				}
 
 				query = append(query, alterQuery)

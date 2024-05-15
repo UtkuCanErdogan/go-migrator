@@ -18,6 +18,7 @@ type AlterColumnBuilder struct {
 	length         int32
 	defaultValue   any
 	foreignBuilder *ForeignBuilder
+	rawSql         *string
 }
 
 type ForeignBuilder struct {
@@ -73,4 +74,8 @@ func (a *AlterColumnBuilder) NotNull() *AlterColumnBuilder {
 func (a *AlterColumnBuilder) Unique() *AlterColumnBuilder {
 	a.constraints = append(a.constraints, Constraint{cType: UniqueConstraint})
 	return a
+}
+
+func (a *AlterColumnBuilder) RawSql(sql string) {
+	a.rawSql = &sql
 }
