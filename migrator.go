@@ -2,7 +2,9 @@ package go_migrator
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+	"gorm.io/gorm"
 )
 
 type TableBuilder struct {
@@ -30,9 +32,10 @@ const (
 
 type Config struct {
 	Client     Client
-	Connection Connection
+	Connection *Connection
 	Migration  *Migration
 	Seed       *Seed
+	Gorm       *gorm.DB
 }
 
 type Connection struct {
@@ -55,16 +58,29 @@ type Seed struct {
 }
 
 func New(config Config) (*Migrator, error) {
-	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.Connection.Host, config.Connection.Port, config.Connection.Username, config.Connection.Password, config.Connection.Database)
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		return nil, err
+	if config.Connection == nil && config.Gorm == nil {
+		return nil, errors.New("no connection parameter found")
 	}
-	defer db.Close()
 
-	if config.Connection.Schema == nil {
-		schema := "public"
-		config.Connection.Schema = &schema
+	var db *sql.DB
+	var err error
+	if config.Connection != nil {
+		connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.Connection.Host, config.Connection.Port, config.Connection.Username, config.Connection.Password, config.Connection.Database)
+		db, err = sql.Open("postgres", connStr)
+		if err != nil {
+			return nil, err
+		}
+		defer db.Close()
+
+		if config.Connection.Schema == nil {
+			schema := "public"
+			config.Connection.Schema = &schema
+		}
+	} else if config.Gorm != nil {
+		db, err = config.Gorm.DB()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	err = db.Ping()
