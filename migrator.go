@@ -5,9 +5,20 @@ import (
 	"fmt"
 )
 
+type TableBuilder struct {
+	createBuilder *CreateTableBuilder
+	alterBuilder  *AlterTableBuilder
+}
+type Migrate struct {
+	key          string
+	fn           func(migrator *Migrator) *TableBuilder
+	TableBuilder *TableBuilder
+}
+
 type Migrator struct {
-	Config Config
-	db     *sql.DB
+	Config  Config
+	migrate []Migrate
+	db      *sql.DB
 }
 
 type Client int32
@@ -30,6 +41,7 @@ type Connection struct {
 	Host     string
 	Port     int32
 	Database string
+	Schema   *string
 }
 
 type Migration struct {
@@ -50,6 +62,11 @@ func New(config Config) (*Migrator, error) {
 	}
 	defer db.Close()
 
+	if config.Connection.Schema == nil {
+		schema := "public"
+		config.Connection.Schema = &schema
+	}
+
 	err = db.Ping()
 	if err != nil {
 		return nil, err
@@ -60,4 +77,9 @@ func New(config Config) (*Migrator, error) {
 
 func (m *Migrator) getDbInstance() *sql.DB {
 	return m.db
+}
+
+func (m *Migrator) AddMigration(key string, fn func(migrator *Migrator) *TableBuilder) {
+	migrate := Migrate{key: key, fn: fn}
+	m.migrate = append(m.migrate, migrate)
 }
