@@ -27,14 +27,11 @@ type Client int32
 
 const (
 	PostgresClient Client = 1
-	MsSqlClient    Client = 2
 )
 
 type Config struct {
 	Client     Client
 	Connection *Connection
-	Migration  *Migration
-	Seed       *Seed
 	Gorm       *gorm.DB
 }
 

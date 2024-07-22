@@ -48,7 +48,7 @@ func (f *ForeignBuilder) Table(referenceTable string) *ForeignBuilder {
 }
 
 func (c *ColumnBuilder) NotNull() *ColumnBuilder {
-	c.constraints = append(c.constraints, Constraint{cType: NotNullConstraint})
+	c.constraints = append(c.constraints, Constraint{cType: notNullConstraint})
 	return c
 }
 
@@ -124,7 +124,7 @@ func (a *ArrayBuilder) Default(value any) *ArrayBuilder {
 }
 
 func (a *ArrayBuilder) NotNull() *ArrayBuilder {
-	a.constraints = append(a.constraints, Constraint{cType: NotNullConstraint})
+	a.constraints = append(a.constraints, Constraint{cType: notNullConstraint})
 	return a
 }
 
@@ -134,7 +134,7 @@ func (a *ArrayBuilder) Unique() *ArrayBuilder {
 }
 
 func (a *AlterColumnBuilder) Primary() *AlterColumnBuilder {
-	a.constraints = append(a.constraints, Constraint{cType: NotNullConstraint})
+	a.constraints = append(a.constraints, Constraint{cType: notNullConstraint})
 	return a
 }
 
@@ -144,7 +144,7 @@ func (a *AlterColumnBuilder) Default(value any) *AlterColumnBuilder {
 }
 
 func (a *AlterColumnBuilder) NotNull() *AlterColumnBuilder {
-	a.constraints = append(a.constraints, Constraint{cType: NotNullConstraint})
+	a.constraints = append(a.constraints, Constraint{cType: notNullConstraint})
 	return a
 }
 

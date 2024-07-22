@@ -8,7 +8,7 @@ type Constraint struct {
 type ConstraintType int32
 
 const (
-	NotNullConstraint    ConstraintType = 1
+	notNullConstraint    ConstraintType = 1
 	UniqueConstraint     ConstraintType = 2
 	PrimaryKeyConstraint ConstraintType = 3
 	ForeignKeyConstraint ConstraintType = 4
@@ -16,7 +16,7 @@ const (
 
 func (c ConstraintType) toString() string {
 	switch c {
-	case NotNullConstraint:
+	case notNullConstraint:
 		return "NOT NULL"
 	case UniqueConstraint:
 		return "UNIQUE"
