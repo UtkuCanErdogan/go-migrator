@@ -9,7 +9,6 @@ import (
 func main() {
 	config := migrator.Config{
 		Client: migrator.PostgresClient,
-
 		Connection: &migrator.Connection{
 			Database: "migrator",
 			Username: "postgres",

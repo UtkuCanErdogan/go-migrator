@@ -67,45 +67,45 @@ const (
 func (c columnType) toString(length int32, arrayType *columnType) string {
 	switch c {
 	case smallInt:
-		return "smallint"
+		return "SMALLINT"
 	case integer:
-		return "integer"
+		return "INTEGER"
 	case bigInt:
-		return "bigint"
+		return "BIGINT"
 	case serial:
-		return "serial"
+		return "SERIAL"
 	case bigSerial:
-		return "bigserial"
+		return "BIGSERIAL"
 	case numeric:
-		return "numeric"
+		return "NUMERIC"
 	case real:
-		return "real"
+		return "REAL"
 	case double:
-		return "double"
+		return "DOUBLE"
 	case varChar:
-		return "varchar(" + fmt.Sprintf("%d", length) + ")"
+		return "VARCHAR(" + fmt.Sprintf("%d", length) + ")"
 	case char:
-		return "char(" + fmt.Sprintf("%d", length) + ")"
+		return "CHAR(" + fmt.Sprintf("%d", length) + ")"
 	case text:
-		return "text"
+		return "TEXT"
 	case date:
-		return "date"
+		return "DATE"
 	case dateTime:
-		return "datetime"
+		return "DATETIME"
 	case timestamp:
-		return "timestamp"
+		return "TIMESTAMPT"
 	case timestampz:
-		return "timestampz"
+		return "TIMESTAMPTZ"
 	case interval:
-		return "interval"
+		return "INTERVAL"
 	case money:
-		return "money"
+		return "MONEY"
 	case uuid:
-		return "uuid"
+		return "UUID"
 	case json:
-		return "json"
+		return "JSON"
 	case jsonb:
-		return "jsonb"
+		return "JSONB"
 	case array:
 		if arrayType == nil {
 			log.Fatal("Invalid operation")
@@ -113,52 +113,52 @@ func (c columnType) toString(length int32, arrayType *columnType) string {
 
 		switch *arrayType {
 		case varChar:
-			return fmt.Sprintf("varchar(%d)[]", length)
+			return fmt.Sprintf("VARCHAR(%d)[]", length)
 		case integer:
-			return "integer[]"
+			return "INTEGER[]"
 		case text:
-			return "text[]"
+			return "TEXT[]"
 		case timestamp:
-			return "timestamp[]"
+			return "TIMESTAMP[]"
 		case date:
-			return "date[]"
+			return "DATE[]"
 		case boolean:
-			return "boolean[]"
+			return "BOOLEAN[]"
 		case json:
-			return "json[]"
+			return "JSON[]"
 		case numeric:
-			return "numeric[]"
+			return "NUMERIC[]"
 		}
 	case point:
-		return "point"
+		return "POINT"
 	case line:
-		return "line"
+		return "LINE"
 	case lseg:
-		return "lseg"
+		return "LSEG"
 	case box:
-		return "box"
+		return "BOX"
 	case path:
-		return "path"
+		return "PATH"
 	case polygon:
-		return "polygon"
+		return "POLYGON"
 	case circle:
-		return "circle"
+		return "CIRCLE"
 	case cidr:
-		return "cidr"
+		return "CIDR"
 	case inet:
-		return "inet"
+		return "INET"
 	case macAddr:
-		return "macaddr"
+		return "MACADDR"
 	case macAddr8:
-		return "macaddr8"
+		return "MACADDR8"
 	case bit:
-		return "bit(" + fmt.Sprintf("%d", length) + ")"
+		return "BIT(" + fmt.Sprintf("%d", length) + ")"
 	case bitVar:
-		return "bit varying(" + fmt.Sprintf("%d", length) + ")"
+		return "BIT VARYING(" + fmt.Sprintf("%d", length) + ")"
 	case xml:
-		return "xml"
+		return "XML"
 	case hStore:
-		return "hstore"
+		return "HSTORE"
 	case int4range:
 		return "int4range"
 	case int8range:
@@ -172,7 +172,7 @@ func (c columnType) toString(length int32, arrayType *columnType) string {
 	case dateRange:
 		return "daterange"
 	case boolean:
-		return "boolean"
+		return "BOOLEAN"
 	}
 
 	return ""
