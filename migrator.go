@@ -57,7 +57,6 @@ func New(config Config) (*Migrator, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer db.Close()
 	} else if config.Gorm != nil {
 		db, err = config.Gorm.DB()
 		if err != nil {

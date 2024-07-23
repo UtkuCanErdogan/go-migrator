@@ -9,8 +9,6 @@ import (
 
 func (m *Migrator) Migrate() error {
 	db := m.getDbInstance()
-	defer db.Close()
-
 	_, err := db.Exec("CREATE TABLE IF NOT EXISTS _migration_history (\n    id SERIAL PRIMARY KEY,\n    name varchar(255) NOT NULL,\n    migration_time timestamptz NOT NULL\n)")
 	if err != nil {
 		return err
