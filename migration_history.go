@@ -33,9 +33,6 @@ func (m *Migrator) saveHistory(migrationHistory []MigrationHistory) error {
 func (m *Migrator) historyList() ([]MigrationHistory, error) {
 	db := m.getDbInstance()
 	migrationName := "_migration_history"
-	if m.Config.Migration != nil && m.Config.Migration.TableName != nil {
-		migrationName = *m.Config.Migration.TableName
-	}
 
 	query := fmt.Sprintf("SELECT * FROM %s", migrationName)
 	rows, err := db.Query(query)

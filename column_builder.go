@@ -26,6 +26,7 @@ type AlterColumnBuilder struct {
 type ForeignBuilder struct {
 	referenceColumn *string
 	referenceTable  *string
+	constraints     []Constraint
 }
 
 type ArrayBuilder struct {
@@ -44,6 +45,11 @@ func (f *ForeignBuilder) Reference(referenceColumn string) *ForeignBuilder {
 
 func (f *ForeignBuilder) Table(referenceTable string) *ForeignBuilder {
 	f.referenceTable = &referenceTable
+	return f
+}
+
+func (f *ForeignBuilder) NotNull() *ForeignBuilder {
+	f.constraints = append(f.constraints, Constraint{cType: notNullConstraint})
 	return f
 }
 

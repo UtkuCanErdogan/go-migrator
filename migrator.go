@@ -44,16 +44,6 @@ type Connection struct {
 	Schema   *string
 }
 
-type Migration struct {
-	TableName *string
-	Directory *string
-}
-
-type Seed struct {
-	TableName *string
-	Directory *string
-}
-
 func New(config Config) (*Migrator, error) {
 	if config.Connection == nil && config.Gorm == nil {
 		return nil, errors.New("no connection parameter found")
