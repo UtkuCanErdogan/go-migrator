@@ -40,7 +40,7 @@ func (m *Migrator) Migrate() error {
 		if tableBuilder != nil && tableBuilder.createBuilder != nil {
 			builder := *tableBuilder.createBuilder
 
-			createQuery := "CREATE TABLE " + builder.tableName + "(\n"
+			createQuery := "CREATE TABLE " + *m.Config.Schema + "." + builder.tableName + "(\n"
 			for index, column := range builder.columns {
 				if column.foreignBuilder != nil {
 					if column.foreignBuilder.referenceColumn == nil || column.foreignBuilder.referenceTable == nil {
@@ -85,7 +85,7 @@ func (m *Migrator) Migrate() error {
 			builder := *tableBuilder.alterBuilder
 
 			for _, column := range builder.columns {
-				alterQuery := "ALTER TABLE " + builder.tableName
+				alterQuery := "ALTER TABLE " + *m.Config.Schema + "." + builder.tableName
 
 				if column.rawSql != nil {
 					alterQuery = *column.rawSql
