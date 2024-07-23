@@ -33,6 +33,7 @@ type Config struct {
 	Client     Client
 	Connection *Connection
 	Gorm       *gorm.DB
+	Schema     *string
 }
 
 type Connection struct {
@@ -41,7 +42,6 @@ type Connection struct {
 	Host     string
 	Port     int32
 	Database string
-	Schema   *string
 }
 
 func New(config Config) (*Migrator, error) {
@@ -58,16 +58,16 @@ func New(config Config) (*Migrator, error) {
 			return nil, err
 		}
 		defer db.Close()
-
-		if config.Connection.Schema == nil {
-			schema := "public"
-			config.Connection.Schema = &schema
-		}
 	} else if config.Gorm != nil {
 		db, err = config.Gorm.DB()
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	if config.Schema == nil {
+		schema := "public"
+		config.Schema = &schema
 	}
 
 	err = db.Ping()

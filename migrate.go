@@ -49,7 +49,7 @@ func (m *Migrator) Migrate() error {
 						return errors.New("reference column and table required for foreign operation")
 					}
 
-					createQuery = createQuery + "CONSTRAINT fk_" + column.name + " FOREIGN KEY(" + *column.foreignBuilder.referenceColumn + ") " + "REFERENCES " + *m.Config.Connection.Schema + "." + *column.foreignBuilder.referenceTable
+					createQuery = createQuery + "CONSTRAINT fk_" + column.name + " FOREIGN KEY(" + *column.foreignBuilder.referenceColumn + ") " + "REFERENCES " + *m.Config.Schema + "." + *column.foreignBuilder.referenceTable
 				} else {
 					var arrayType *columnType
 					var referenceQuery string
@@ -135,7 +135,7 @@ func (m *Migrator) Migrate() error {
 								return errors.New("reference column and table required for foreign operation")
 							}
 
-							alterQuery = alterQuery + " ADD CONSTRAINT fk_" + column.name + " FOREIGN KEY(" + *column.foreignBuilder.referenceColumn + ") " + "REFERENCES " + *m.Config.Connection.Schema + *column.foreignBuilder.referenceTable
+							alterQuery = alterQuery + " ADD CONSTRAINT fk_" + column.name + " FOREIGN KEY(" + *column.foreignBuilder.referenceColumn + ") " + "REFERENCES " + *m.Config.Schema + *column.foreignBuilder.referenceTable
 						} else {
 							alterQuery = alterQuery + " ADD CONSTRAINT " + strings.ToLower(column.name) + "_" + cons.cType.ToLower() + " " + cons.cType.toString() + "("
 							alterQuery = alterQuery + column.name + ")"
