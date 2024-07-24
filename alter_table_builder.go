@@ -344,11 +344,8 @@ func (a *AlterTableBuilder) Array(columnName string) *ArrayBuilder {
 	return builder
 }
 
-func (a *AlterTableBuilder) Foreign(columnName string) *ForeignBuilder {
+func (a *AlterColumnBuilder) Foreign() *ForeignBuilder {
 	foreign := &ForeignBuilder{referenceColumn: nil, referenceTable: nil}
-	column := &AlterColumnBuilder{name: columnName, constraints: []Constraint{{cType: ForeignKeyConstraint}}, operation: OperationCreateColumn, foreignBuilder: foreign}
-	a.columns = append(a.columns, column)
-
 	return foreign
 }
 
