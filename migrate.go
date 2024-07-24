@@ -64,11 +64,13 @@ func (m *Migrator) Migrate() error {
 					createQuery = createQuery + " DEFAULT " + fmt.Sprintf("%v", column.defaultValue)
 				}
 
-				if column.foreignBuilder.referenceColumn == nil || column.foreignBuilder.referenceTable == nil {
-					return errors.New("reference column and table required for foreign operation")
-				}
+				if column.foreignBuilder != nil {
+					if column.foreignBuilder.referenceColumn == nil || column.foreignBuilder.referenceTable == nil {
+						return errors.New("reference column and table required for foreign operation")
+					}
 
-				createQuery = createQuery + "CONSTRAINT fk_" + column.name + " FOREIGN KEY(" + *column.foreignBuilder.referenceColumn + ") " + "REFERENCES " + *m.Config.Schema + "." + *column.foreignBuilder.referenceTable
+					createQuery = createQuery + "CONSTRAINT fk_" + column.name + " FOREIGN KEY(" + *column.foreignBuilder.referenceColumn + ") " + "REFERENCES " + *m.Config.Schema + "." + *column.foreignBuilder.referenceTable
+				}
 
 				if !(index == len(builder.columns)-1) {
 					createQuery = createQuery + " ," + "\n"
