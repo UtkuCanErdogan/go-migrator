@@ -34,6 +34,12 @@ func (a *AlterTableBuilder) DropConstraint(columnName, constraintName string, co
 	return a
 }
 
+func (a *AlterTableBuilder) SetDefault(columnName string, defaultValue any) *AlterTableBuilder {
+	column := &AlterColumnBuilder{name: columnName, operation: OperationSetDefault, constraints: nil, foreignBuilder: nil, defaultValue: defaultValue}
+	a.columns = append(a.columns, column)
+	return a
+}
+
 func (a *AlterTableBuilder) Increments(columnName string) *AlterColumnBuilder {
 	cType := serial
 	column := &AlterColumnBuilder{name: columnName, operation: OperationCreateColumn, columnType: &cType}

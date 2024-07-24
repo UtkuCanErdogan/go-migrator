@@ -146,6 +146,12 @@ func (m *Migrator) Migrate() error {
 						alterQuery = alterQuery + " DROP CONSTRAINT " + cons.name
 					case OperationDropColumn:
 						alterQuery = alterQuery + " DROP COLUMN " + column.name
+					case OperationSetDefault:
+						if column.defaultValue == nil {
+							return errors.New("default value cannot be empty")
+						}
+
+						alterQuery = alterQuery + " ALTER COLUMN " + column.name + " SET DEFAULT " + fmt.Sprintf("%v", column.defaultValue)
 					default:
 						return errors.New("un supported operation")
 					}

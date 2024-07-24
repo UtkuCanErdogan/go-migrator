@@ -9,4 +9,5 @@ const (
 	OperationChangeType       Operation = 4
 	OperationDropConstraint   Operation = 5
 	OperationDropColumn       Operation = 6
+	OperationSetDefault       Operation = 7
 )
