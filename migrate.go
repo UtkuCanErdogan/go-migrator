@@ -42,36 +42,34 @@ func (m *Migrator) Migrate() error {
 
 			createQuery := "CREATE TABLE " + *m.Config.Schema + "." + builder.tableName + "(\n"
 			for index, column := range builder.columns {
-				if column.foreignBuilder != nil {
-					if column.foreignBuilder.referenceColumn == nil || column.foreignBuilder.referenceTable == nil {
-						return errors.New("reference column and table required for foreign operation")
+				var arrayType *columnType
+				var referenceQuery string
+				if column.arrayBuilder != nil {
+					aType := column.arrayBuilder.columnType
+					arrayType = &aType
+
+					if column.arrayBuilder.referenceColumn != nil && column.arrayBuilder.referenceTable != nil {
+						referenceQuery = fmt.Sprintf("REFERENCES %s (%s)", *column.arrayBuilder.referenceTable, *column.arrayBuilder.referenceColumn)
 					}
-
-					createQuery = createQuery + "CONSTRAINT fk_" + column.name + " FOREIGN KEY(" + *column.foreignBuilder.referenceColumn + ") " + "REFERENCES " + *m.Config.Schema + "." + *column.foreignBuilder.referenceTable
-				} else {
-					var arrayType *columnType
-					var referenceQuery string
-					if column.arrayBuilder != nil {
-						aType := column.arrayBuilder.columnType
-						arrayType = &aType
-
-						if column.arrayBuilder.referenceColumn != nil && column.arrayBuilder.referenceTable != nil {
-							referenceQuery = fmt.Sprintf("REFERENCES %s (%s)", *column.arrayBuilder.referenceTable, *column.arrayBuilder.referenceColumn)
-						}
-					}
-
-					createQuery = createQuery + column.name + " " + column.columnType.toString(column.length, arrayType) + referenceQuery
-					if len(column.constraints) > 0 {
-						for _, cons := range column.constraints {
-							createQuery = createQuery + " " + cons.cType.toString()
-						}
-					}
-
-					if column.defaultValue != nil {
-						createQuery = createQuery + " DEFAULT " + fmt.Sprintf("%v", column.defaultValue)
-					}
-
 				}
+
+				createQuery = createQuery + column.name + " " + column.columnType.toString(column.length, arrayType) + referenceQuery
+				if len(column.constraints) > 0 {
+					for _, cons := range column.constraints {
+						createQuery = createQuery + " " + cons.cType.toString()
+					}
+				}
+
+				if column.defaultValue != nil {
+					createQuery = createQuery + " DEFAULT " + fmt.Sprintf("%v", column.defaultValue)
+				}
+
+				if column.foreignBuilder.referenceColumn == nil || column.foreignBuilder.referenceTable == nil {
+					return errors.New("reference column and table required for foreign operation")
+				}
+
+				createQuery = createQuery + "CONSTRAINT fk_" + column.name + " FOREIGN KEY(" + *column.foreignBuilder.referenceColumn + ") " + "REFERENCES " + *m.Config.Schema + "." + *column.foreignBuilder.referenceTable
+
 				if !(index == len(builder.columns)-1) {
 					createQuery = createQuery + " ," + "\n"
 				}
@@ -92,29 +90,28 @@ func (m *Migrator) Migrate() error {
 				} else {
 					switch column.operation {
 					case OperationCreateColumn:
-						if column.foreignBuilder != nil {
-							if column.foreignBuilder.referenceColumn == nil || column.foreignBuilder.referenceTable == nil {
-								return errors.New("reference column and table required for foreign operation")
-							}
+						var arrayType *columnType
+						var referenceQuery string
+						if column.arrayBuilder != nil {
+							aType := column.arrayBuilder.columnType
+							arrayType = &aType
 
-							alterQuery = "ALTER TABLE " + builder.tableName + " ADD CONSTRAINT fk_" + column.name + " FOREIGN KEY(" + *column.foreignBuilder.referenceColumn + ") " + "REFERENCES public." + *column.foreignBuilder.referenceTable
-						} else {
-							var arrayType *columnType
-							var referenceQuery string
-							if column.arrayBuilder != nil {
-								aType := column.arrayBuilder.columnType
-								arrayType = &aType
-
-								if column.arrayBuilder.referenceColumn != nil && column.arrayBuilder.referenceTable != nil {
-									referenceQuery = fmt.Sprintf("REFERENCES %s (%s)", *column.arrayBuilder.referenceTable, *column.arrayBuilder.referenceColumn)
-								}
-							}
-
-							alterQuery = alterQuery + " ADD COLUMN " + column.name + " " + column.columnType.toString(column.length, arrayType) + referenceQuery
-							if column.defaultValue != nil {
-								alterQuery = alterQuery + " DEFAULT " + fmt.Sprintf("%v", column.defaultValue)
+							if column.arrayBuilder.referenceColumn != nil && column.arrayBuilder.referenceTable != nil {
+								referenceQuery = fmt.Sprintf("REFERENCES %s (%s)", *column.arrayBuilder.referenceTable, *column.arrayBuilder.referenceColumn)
 							}
 						}
+
+						alterQuery = alterQuery + " ADD COLUMN " + column.name + " " + column.columnType.toString(column.length, arrayType) + referenceQuery
+						if column.defaultValue != nil {
+							alterQuery = alterQuery + " DEFAULT " + fmt.Sprintf("%v", column.defaultValue)
+						}
+
+						if column.foreignBuilder.referenceColumn == nil || column.foreignBuilder.referenceTable == nil {
+							return errors.New("reference column and table required for foreign operation")
+						}
+
+						alterQuery = "ALTER TABLE " + builder.tableName + " ADD CONSTRAINT fk_" + column.name + " FOREIGN KEY(" + *column.foreignBuilder.referenceColumn + ") " + "REFERENCES " + *m.Config.Schema + "." + *column.foreignBuilder.referenceTable
+
 						if len(column.constraints) > 0 {
 							for _, cons := range column.constraints {
 								alterQuery = alterQuery + " " + cons.cType.toString()

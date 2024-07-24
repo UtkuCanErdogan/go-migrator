@@ -43,7 +43,7 @@ func accountCreate(migrate *migrator.Migrator) *migrator.TableBuilder {
 	account.String("email", 80).Unique().NotNull()
 	account.String("phone_number", 16).Unique().NotNull()
 	account.Boolean("is_active").NotNull().Default(true)
-	account.Foreign("role_id").Table("role").Reference("id")
+	account.UUID("role_id").Foreign().Table("role").Reference("id")
 
 	return account.Build()
 }
